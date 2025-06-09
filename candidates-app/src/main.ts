@@ -1,6 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
+// Polyfill for crypto in Node.js 18
+if (!globalThis.crypto) {
+  const crypto = require('crypto');
+  globalThis.crypto = crypto.webcrypto || crypto;
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
