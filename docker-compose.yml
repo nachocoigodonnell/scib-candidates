@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Backend service (NestJS API)
+  backend:
+    build:
+      context: ./candidates-app
+      dockerfile: Dockerfile
+    container_name: candidates-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - NODE_ENV=production
+    networks:
+      - candidates-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  # Frontend service (Angular + Nginx)
+  frontend:
+    build:
+      context: ./candidates-webapp
+      dockerfile: Dockerfile
+    container_name: candidates-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - candidates-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+networks:
+  candidates-network:
+    driver: bridge
+    name: candidates-network
