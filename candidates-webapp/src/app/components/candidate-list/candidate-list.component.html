@@ -1,0 +1,79 @@
+<mat-toolbar color="primary">
+  <span>Candidates Management</span>
+  <span class="spacer"></span>
+  <button mat-raised-button color="accent" (click)="openCreateCandidateDialog()">
+    <mat-icon>add</mat-icon>
+    Add Candidate
+  </button>
+</mat-toolbar>
+
+<div class="container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Candidates List</mat-card-title>
+      <mat-card-subtitle>Total: {{ candidates.length }} candidates</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <div *ngIf="loading" class="loading">
+        Loading candidates...
+      </div>
+      
+      <div *ngIf="!loading && candidates.length === 0" class="empty-state">
+        <mat-icon>person_add</mat-icon>
+        <h3>No candidates found</h3>
+        <p>Start by adding your first candidate</p>
+        <button mat-raised-button color="primary" (click)="openCreateCandidateDialog()">
+          <mat-icon>add</mat-icon>
+          Add First Candidate
+        </button>
+      </div>
+      
+      <table mat-table [dataSource]="candidates" *ngIf="!loading && candidates.length > 0" class="candidates-table">
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let candidate">{{ getFullName(candidate) }}</td>
+        </ng-container>
+
+        <!-- Seniority Column -->
+        <ng-container matColumnDef="seniority">
+          <th mat-header-cell *matHeaderCellDef>Seniority</th>
+          <td mat-cell *matCellDef="let candidate">
+            <mat-chip-set>
+              <mat-chip [color]="candidate.seniority === 'Senior' ? 'primary' : 'accent'">
+                {{ candidate.seniority }}
+              </mat-chip>
+            </mat-chip-set>
+          </td>
+        </ng-container>
+
+        <!-- Years of Experience Column -->
+        <ng-container matColumnDef="yearsOfExperience">
+          <th mat-header-cell *matHeaderCellDef>Experience</th>
+          <td mat-cell *matCellDef="let candidate">{{ candidate.yearsOfExperience }} years</td>
+        </ng-container>
+
+        <!-- Availability Column -->
+        <ng-container matColumnDef="availability">
+          <th mat-header-cell *matHeaderCellDef>Availability</th>
+          <td mat-cell *matCellDef="let candidate">
+            <mat-chip [color]="candidate.availability ? 'primary' : 'warn'">
+              <mat-icon>{{ candidate.availability ? 'check_circle' : 'cancel' }}</mat-icon>
+              {{ candidate.availability ? 'Available' : 'Not Available' }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Created Date Column -->
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef>Created</th>
+          <td mat-cell *matCellDef="let candidate">{{ candidate.createdAt | date:'short' }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>
