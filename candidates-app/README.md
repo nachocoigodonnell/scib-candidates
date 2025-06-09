@@ -91,6 +91,44 @@ npm run start:prod
 
 The API will be available at `http://localhost:3000`.
 
+## Testing
+
+The application includes comprehensive tests using Jest:
+
+### Unit Tests
+```bash
+# Run all unit tests
+npm test
+
+# Run tests with coverage
+npm run test:cov
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+### E2E Tests
+```bash
+# Run end-to-end tests
+npm run test:e2e
+```
+
+### Test Structure
+- **Domain Tests**: Value Objects and Entities validation
+- **Application Tests**: Use Cases with mocked dependencies
+- **Infrastructure Tests**: Repository and Service implementations
+- **E2E Tests**: Full API integration tests
+
+Current test coverage includes:
+- ✅ 49 unit tests across all layers
+- ✅ 6 e2e tests for API endpoints
+- ✅ Value object validation and business rules
+- ✅ Entity creation and transformation
+- ✅ Use case orchestration
+- ✅ Repository operations
+- ✅ Excel parsing functionality
+- ✅ API endpoint behavior
+
 ## DDD Benefits Implemented
 
 1. **Separation of Concerns**: Clear boundaries between domain, application, and infrastructure
