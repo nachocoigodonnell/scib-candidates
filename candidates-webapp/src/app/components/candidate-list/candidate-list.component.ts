@@ -31,7 +31,7 @@ import { CandidateFormComponent } from '../candidate-form/candidate-form.compone
 })
 export class CandidateListComponent implements OnInit {
   candidates: Candidate[] = [];
-  displayedColumns: string[] = ['name', 'seniority', 'yearsOfExperience', 'availability', 'createdAt'];
+  displayedColumns: string[] = ['name', 'seniority', 'yearsOfExperience', 'availability'];
   loading = true;
 
   constructor(

@@ -34,7 +34,6 @@ describe('Candidates (e2e)', () => {
       // Create a mock Excel file
       const workbook = XLSX.utils.book_new();
       const worksheetData = [
-        ['Seniority', 'Years', 'Availability'],
         ['Senior', 5, true]
       ];
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -70,7 +69,7 @@ describe('Candidates (e2e)', () => {
 
     it('should return 400 when firstName is missing', async () => {
       const workbook = XLSX.utils.book_new();
-      const worksheetData = [['Seniority', 'Years', 'Availability'], ['Junior', 2, false]];
+      const worksheetData = [['Junior', 2, false]];
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
       const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
@@ -85,7 +84,6 @@ describe('Candidates (e2e)', () => {
     it('should return 400 when Excel data is invalid', async () => {
       const workbook = XLSX.utils.book_new();
       const worksheetData = [
-        ['Seniority', 'Years', 'Availability'],
         ['InvalidSeniority', 5, true]
       ];
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -106,7 +104,6 @@ describe('Candidates (e2e)', () => {
       // Create candidate
       const workbook = XLSX.utils.book_new();
       const worksheetData = [
-        ['Seniority', 'Years', 'Availability'],
         ['Junior', 2, false]
       ];
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);

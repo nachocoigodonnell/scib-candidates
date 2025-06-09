@@ -17,11 +17,11 @@ export class XlsxExcelParserService implements ExcelParserService {
       const worksheet = workbook.Sheets[sheetName];
       const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-      if (data.length < 2) {
+      if (data.length < 1) {
         throw new BadRequestException('Excel file must contain at least one data row');
       }
 
-      const row = data[1] as any[];
+      const row = data[0] as any[];
       
       if (row.length < 3) {
         throw new BadRequestException('Excel row must contain 3 columns: Seniority, Years of Experience, Availability');

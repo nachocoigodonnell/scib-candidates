@@ -30,7 +30,6 @@ describe('XlsxExcelParserService', () => {
       };
 
       const mockData = [
-        ['Seniority', 'Years', 'Availability'],
         ['Senior', 5, true],
       ];
 
@@ -63,7 +62,6 @@ describe('XlsxExcelParserService', () => {
       };
 
       const mockData = [
-        ['Seniority', 'Years', 'Availability'],
         ['Invalid', 5, true],
       ];
 
