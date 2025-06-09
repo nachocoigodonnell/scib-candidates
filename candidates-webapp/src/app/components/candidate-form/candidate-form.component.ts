@@ -33,6 +33,7 @@ export class CandidateFormComponent implements OnInit {
   candidateForm: FormGroup;
   selectedFile: File | null = null;
   loading = false;
+  isDragOver = false;
 
   constructor(
     private fb: FormBuilder,
@@ -107,6 +108,18 @@ export class CandidateFormComponent implements OnInit {
       const control = this.candidateForm.get(key);
       control?.markAsTouched();
     });
+  }
+
+  removeFile() {
+    this.selectedFile = null;
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
   getErrorMessage(fieldName: string): string {

@@ -1,28 +1,54 @@
-<h2 mat-dialog-title>Add New Candidate</h2>
+<div class="dialog-header">
+  <div class="header-icon">
+    <mat-icon>person_add</mat-icon>
+  </div>
+  <div class="header-content">
+    <h2 class="dialog-title">Add New Candidate</h2>
+    <p class="dialog-subtitle">Fill in the candidate information and upload their data file</p>
+  </div>
+</div>
 
-<mat-dialog-content>
+<mat-dialog-content class="dialog-body">
   <form [formGroup]="candidateForm" class="candidate-form">
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>First Name</mat-label>
-      <input matInput formControlName="firstName" placeholder="Enter first name">
-      <mat-error *ngIf="candidateForm.get('firstName')?.invalid && candidateForm.get('firstName')?.touched">
-        {{ getErrorMessage('firstName') }}
-      </mat-error>
-    </mat-form-field>
+    <!-- Personal Information Section -->
+    <div class="form-section">
+      <h3 class="section-title">Personal Information</h3>
+      
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>First Name</mat-label>
+          <input 
+            matInput 
+            formControlName="firstName" 
+            placeholder="e.g., John"
+            autocomplete="given-name">
+          <mat-icon matPrefix>person</mat-icon>
+          <mat-error *ngIf="candidateForm.get('firstName')?.invalid && candidateForm.get('firstName')?.touched">
+            {{ getErrorMessage('firstName') }}
+          </mat-error>
+        </mat-form-field>
 
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Last Name</mat-label>
-      <input matInput formControlName="lastName" placeholder="Enter last name">
-      <mat-error *ngIf="candidateForm.get('lastName')?.invalid && candidateForm.get('lastName')?.touched">
-        {{ getErrorMessage('lastName') }}
-      </mat-error>
-    </mat-form-field>
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Last Name</mat-label>
+          <input 
+            matInput 
+            formControlName="lastName" 
+            placeholder="e.g., Doe"
+            autocomplete="family-name">
+          <mat-icon matPrefix>badge</mat-icon>
+          <mat-error *ngIf="candidateForm.get('lastName')?.invalid && candidateForm.get('lastName')?.touched">
+            {{ getErrorMessage('lastName') }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
 
-    <div class="file-upload-section">
-      <label class="file-upload-label">
-        Excel File with Candidate Data *
-      </label>
-      <div class="file-upload-container">
+    <!-- File Upload Section -->
+    <div class="form-section">
+      <h3 class="section-title">Professional Data</h3>
+      <p class="section-description">Upload an Excel file containing the candidate's professional information</p>
+      
+      <div class="file-upload-area" [class.has-file]="selectedFile" [class.drag-over]="isDragOver">
         <input 
           type="file" 
           #fileInput 
@@ -30,45 +56,82 @@
           accept=".xlsx,.xls"
           class="file-input"
           id="file-upload">
-        <button 
-          type="button" 
-          mat-stroked-button 
-          (click)="fileInput.click()"
-          class="file-upload-button">
-          <mat-icon>upload_file</mat-icon>
-          Choose Excel File
-        </button>
-        <span class="file-info" *ngIf="selectedFile">
-          {{ selectedFile.name }}
-        </span>
-        <span class="file-info error" *ngIf="!selectedFile">
-          Please select an Excel file
-        </span>
+        
+        <div class="upload-content" *ngIf="!selectedFile">
+          <div class="upload-icon">
+            <mat-icon>cloud_upload</mat-icon>
+          </div>
+          <h4>Upload Excel File</h4>
+          <p>Choose a file or drag it here</p>
+          <button 
+            type="button" 
+            mat-stroked-button 
+            (click)="fileInput.click()"
+            class="upload-button">
+            <mat-icon>folder_open</mat-icon>
+            Browse Files
+          </button>
+        </div>
+
+        <div class="file-selected" *ngIf="selectedFile">
+          <div class="file-icon">
+            <mat-icon>description</mat-icon>
+          </div>
+          <div class="file-details">
+            <div class="file-name">{{ selectedFile.name }}</div>
+            <div class="file-size">{{ formatFileSize(selectedFile.size) }}</div>
+          </div>
+          <button 
+            type="button" 
+            mat-icon-button 
+            (click)="removeFile()"
+            class="remove-button">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
       </div>
+
       <div class="file-requirements">
-        <p><strong>Excel file requirements:</strong></p>
-        <ul>
-          <li>Must contain one data row with 3 columns:</li>
-          <li>1. Seniority: "Junior" or "Senior"</li>
-          <li>2. Years of Experience: Number (≥ 0)</li>
-          <li>3. Availability: true or false</li>
-        </ul>
+        <div class="requirements-header">
+          <mat-icon>info</mat-icon>
+          <span>File Requirements</span>
+        </div>
+        <div class="requirements-content">
+          <div class="requirement-item">
+            <mat-icon class="check-icon">check_circle</mat-icon>
+            <span>Excel file (.xlsx or .xls)</span>
+          </div>
+          <div class="requirement-item">
+            <mat-icon class="check-icon">check_circle</mat-icon>
+            <span>One data row with: Seniority, Years of Experience, Availability</span>
+          </div>
+          <div class="requirement-item">
+            <mat-icon class="check-icon">check_circle</mat-icon>
+            <span>Seniority: "Junior" or "Senior"</span>
+          </div>
+        </div>
       </div>
     </div>
   </form>
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()" [disabled]="loading">
+<mat-dialog-actions class="dialog-actions">
+  <button 
+    mat-button 
+    (click)="onCancel()" 
+    [disabled]="loading"
+    class="cancel-button">
     Cancel
   </button>
   <button 
     mat-raised-button 
     color="primary" 
     (click)="onSubmit()"
-    [disabled]="!candidateForm.valid || !selectedFile || loading">
-    <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
-    <span *ngIf="!loading">Create Candidate</span>
-    <span *ngIf="loading">Creating...</span>
+    [disabled]="!candidateForm.valid || !selectedFile || loading"
+    class="submit-button">
+    <mat-spinner diameter="18" *ngIf="loading" class="button-spinner"></mat-spinner>
+    <mat-icon *ngIf="!loading">person_add</mat-icon>
+    <span *ngIf="!loading">Add Candidate</span>
+    <span *ngIf="loading">Adding...</span>
   </button>
 </mat-dialog-actions>

@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { CandidateService } from '../../services/candidate.service';
 import { Candidate } from '../../models/candidate.model';
@@ -22,7 +23,8 @@ import { CandidateFormComponent } from '../candidate-form/candidate-form.compone
     MatIconModule,
     MatCardModule,
     MatChipsModule,
-    MatToolbarModule
+    MatToolbarModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './candidate-list.component.html',
   styleUrl: './candidate-list.component.scss'
@@ -56,9 +58,17 @@ export class CandidateListComponent implements OnInit {
   }
 
   openCreateCandidateDialog() {
+    const isMobile = window.innerWidth <= 768;
+    
     const dialogRef = this.dialog.open(CandidateFormComponent, {
-      width: '500px',
-      disableClose: true
+      width: isMobile ? '95vw' : '90vw',
+      maxWidth: isMobile ? '95vw' : '700px',
+      minWidth: isMobile ? '300px' : '600px',
+      maxHeight: '90vh',
+      disableClose: true,
+      panelClass: 'custom-dialog-container',
+      hasBackdrop: true,
+      backdropClass: 'custom-backdrop'
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -70,5 +80,17 @@ export class CandidateListComponent implements OnInit {
 
   getFullName(candidate: Candidate): string {
     return `${candidate.firstName} ${candidate.lastName}`;
+  }
+
+  getInitials(candidate: Candidate): string {
+    return `${candidate.firstName.charAt(0)}${candidate.lastName.charAt(0)}`.toUpperCase();
+  }
+
+  getAvailableCandidates(): number {
+    return this.candidates.filter(c => c.availability).length;
+  }
+
+  getSeniorCandidates(): number {
+    return this.candidates.filter(c => c.seniority === 'Senior').length;
   }
 }
