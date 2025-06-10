@@ -13,7 +13,7 @@
   padding: var(--spacing-2xl) var(--spacing-xl);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .header-content {
@@ -169,6 +169,101 @@
 
     mat-icon {
       margin-right: var(--spacing-sm);
+    }
+  }
+}
+
+/* Search and Filters Section */
+.search-filters-section {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  align-items: flex-start;
+  flex-wrap: wrap;
+
+  .search-container {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+
+    .search-field {
+      flex: 1;
+
+      mat-icon[matPrefix] {
+        color: var(--neutral-500);
+      }
+    }
+
+    .search-button {
+      margin-top: 8px;
+      height: 40px;
+      font-weight: 600;
+      text-transform: none;
+      padding: 0 var(--spacing-lg);
+
+      mat-icon {
+        margin-right: var(--spacing-sm);
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+
+  .filters-container {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+
+    .sort-field {
+      min-width: 180px;
+    }
+
+    .sort-order-button {
+      margin-top: 8px;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      transition: all 0.2s ease-in-out;
+
+      &:hover {
+        background-color: var(--primary-50);
+        transform: translateY(-1px);
+      }
+
+      mat-icon {
+        color: var(--primary-600);
+      }
+    }
+  }
+}
+
+/* Pagination Styles */
+.table-paginator {
+  border-top: 1px solid var(--neutral-200);
+  background: var(--neutral-50);
+
+  ::ng-deep {
+    .mat-mdc-paginator-container {
+      padding: var(--spacing-lg) var(--spacing-xl);
+      justify-content: space-between;
+    }
+
+    .mat-mdc-paginator-range-label {
+      font-size: 0.875rem;
+      color: var(--neutral-600);
+    }
+
+    .mat-mdc-select {
+      font-size: 0.875rem;
+    }
+
+    .mat-mdc-icon-button {
+      &:hover {
+        background-color: var(--primary-50);
+      }
     }
   }
 }
@@ -363,6 +458,31 @@
     margin-bottom: var(--spacing-lg);
   }
 
+  .search-filters-section {
+    flex-direction: column;
+    gap: var(--spacing-md);
+
+    .search-container {
+      min-width: auto;
+      flex-direction: column;
+
+      .search-button {
+        width: 100%;
+        margin-top: var(--spacing-sm);
+      }
+    }
+
+    .filters-container {
+      justify-content: space-between;
+      width: 100%;
+
+      .sort-field {
+        flex: 1;
+        min-width: auto;
+      }
+    }
+  }
+
   .candidates-table {
     .header-cell,
     .data-cell {
@@ -417,22 +537,22 @@
   height: 36px;
   border-radius: var(--radius-md);
   transition: all 0.2s ease-in-out;
-  
+
   &:not(:disabled) {
     &:hover {
       background-color: var(--primary-50);
       transform: translateY(-1px);
     }
-    
+
     mat-icon {
       color: var(--primary-600);
     }
   }
-  
+
   &:disabled {
     cursor: not-allowed;
     opacity: 0.4;
-    
+
     mat-icon {
       color: var(--neutral-400);
     }

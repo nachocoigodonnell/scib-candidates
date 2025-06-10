@@ -1,8 +1,24 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Candidate, CreateCandidateRequest } from '../models/candidate.model';
 import { environment } from '../../environments/environment';
+
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
+  search?: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +30,28 @@ export class CandidateService {
 
   getCandidates(): Observable<Candidate[]> {
     return this.http.get<Candidate[]>(this.apiUrl);
+  }
+
+  getCandidatesWithPagination(params: PaginationParams): Observable<PaginatedResponse<Candidate>> {
+    let httpParams = new HttpParams();
+    
+    if (params.page !== undefined) {
+      httpParams = httpParams.set('page', params.page.toString());
+    }
+    if (params.limit !== undefined) {
+      httpParams = httpParams.set('limit', params.limit.toString());
+    }
+    if (params.sortBy) {
+      httpParams = httpParams.set('sortBy', params.sortBy);
+    }
+    if (params.sortOrder) {
+      httpParams = httpParams.set('sortOrder', params.sortOrder);
+    }
+    if (params.search) {
+      httpParams = httpParams.set('search', params.search);
+    }
+
+    return this.http.get<PaginatedResponse<Candidate>>(this.apiUrl, { params: httpParams });
   }
 
   createCandidate(candidateData: CreateCandidateRequest, excelFile: File): Observable<Candidate> {

@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { CandidateRepository } from '../../../domain/candidate/repositories/candidate.repository';
+import { CandidateRepository, PaginationOptions, PaginatedResult } from '../../../domain/candidate/repositories/candidate.repository';
 import { FileRepository } from '../../../domain/file/repositories/file.repository';
 import { FileIdVO } from '../../../domain/file/value-objects/file-id.vo';
 import { CandidateResponseDto } from '../dtos/candidate-response.dto';
@@ -41,5 +41,42 @@ export class GetAllCandidatesUseCase {
     });
     
     return Promise.all(candidatePromises);
+  }
+
+  async executeWithPagination(options: PaginationOptions): Promise<PaginatedResult<CandidateResponseDto>> {
+    const result = await this.candidateRepository.findWithPagination(options);
+    
+    const candidatePromises = result.data.map(async candidate => {
+      const primitives = candidate.toPrimitives();
+      let fileUrl: string | undefined;
+      
+      if (primitives.fileId) {
+        const file = await this.fileRepository.findById(
+          FileIdVO.create(primitives.fileId)
+        );
+        fileUrl = file?.getUrl().getValue();
+      }
+      
+      return new CandidateResponseDto(
+        primitives.id,
+        primitives.firstName,
+        primitives.lastName,
+        primitives.seniority,
+        primitives.yearsOfExperience,
+        primitives.availability,
+        primitives.createdAt,
+        fileUrl
+      );
+    });
+    
+    const candidateResponseDtos = await Promise.all(candidatePromises);
+    
+    return {
+      data: candidateResponseDtos,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages
+    };
   }
 }

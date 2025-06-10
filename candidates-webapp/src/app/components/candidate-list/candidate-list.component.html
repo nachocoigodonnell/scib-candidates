@@ -24,7 +24,7 @@
     <!-- Stats Section -->
     <div class="stats-section" *ngIf="!loading">
       <div class="stat-card">
-        <div class="stat-value">{{ candidates.length }}</div>
+        <div class="stat-value">{{ totalCandidates }}</div>
         <div class="stat-label">Total Candidates</div>
       </div>
       <div class="stat-card">
@@ -37,31 +37,66 @@
       </div>
     </div>
 
+    <!-- Search and Filters Section -->
+    <div class="search-filters-section" *ngIf="!loading">
+      <div class="search-container">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search candidates</mat-label>
+          <input
+            matInput
+            [(ngModel)]="searchInput"
+            (keyup.enter)="performSearch()"
+            placeholder="Search by name and press Enter..."
+          />
+          <mat-icon matPrefix>search</mat-icon>
+          <button
+            *ngIf="searchInput"
+            matSuffix
+            mat-icon-button
+            (click)="clearSearch()"
+            aria-label="Clear">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="performSearch()"
+          class="search-button"
+          [disabled]="loading">
+          <mat-icon>search</mat-icon>
+          Search
+        </button>
+      </div>
+
+      <div class="filters-container">
+        <mat-form-field appearance="outline" class="sort-field">
+          <mat-label>Sort by</mat-label>
+          <mat-select [(value)]="sortBy" (selectionChange)="onSortChange()">
+            <mat-option *ngFor="let option of sortOptions" [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button
+          mat-icon-button
+          (click)="toggleSortOrder()"
+          [title]="'Sort ' + (sortOrder === 'ASC' ? 'Ascending' : 'Descending')"
+          class="sort-order-button">
+          <mat-icon>{{ sortOrder === 'ASC' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+        </button>
+      </div>
+    </div>
+
     <!-- Loading State -->
     <div *ngIf="loading" class="loading-state">
       <mat-spinner diameter="40"></mat-spinner>
       <p>Loading candidates...</p>
     </div>
 
-    <!-- Empty State -->
-    <div *ngIf="!loading && candidates.length === 0" class="empty-state">
-      <div class="empty-icon">
-        <mat-icon>people_outline</mat-icon>
-      </div>
-      <h3>No candidates yet</h3>
-      <p>Start building your talent pipeline by adding your first candidate</p>
-      <button
-        mat-raised-button
-        color="primary"
-        (click)="openCreateCandidateDialog()"
-        class="cta-button">
-        <mat-icon>person_add</mat-icon>
-        <span>Add Your First Candidate</span>
-      </button>
-    </div>
-
     <!-- Candidates Table -->
-    <div *ngIf="!loading && candidates.length > 0" class="table-container">
+    <div *ngIf="!loading" class="table-container">
       <table mat-table [dataSource]="candidates" class="candidates-table">
         <!-- Name Column -->
         <ng-container matColumnDef="name">
@@ -141,6 +176,17 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" class="table-header"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
       </table>
+
+      <!-- Pagination -->
+      <mat-paginator
+        [length]="totalCandidates"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="pageSizeOptions"
+        [pageIndex]="currentPage - 1"
+        (page)="onPageChange($event)"
+        class="table-paginator"
+        showFirstLastButtons>
+      </mat-paginator>
     </div>
   </main>
 </div>

@@ -8,8 +8,15 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSortModule } from '@angular/material/sort';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { PageEvent } from '@angular/material/paginator';
 
-import { CandidateService } from '../../services/candidate.service';
+import { CandidateService, PaginationParams, PaginatedResponse } from '../../services/candidate.service';
 import { Candidate } from '../../models/candidate.model';
 import { CandidateFormComponent } from '../candidate-form/candidate-form.component';
 
@@ -24,7 +31,14 @@ import { CandidateFormComponent } from '../candidate-form/candidate-form.compone
     MatCardModule,
     MatChipsModule,
     MatToolbarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatSortModule,
+    FormsModule,
+    ReactiveFormsModule
   ],
   templateUrl: './candidate-list.component.html',
   styleUrl: './candidate-list.component.scss'
@@ -33,6 +47,28 @@ export class CandidateListComponent implements OnInit {
   candidates: Candidate[] = [];
   displayedColumns: string[] = ['name', 'seniority', 'yearsOfExperience', 'availability', 'actions'];
   loading = true;
+
+  // Pagination
+  totalCandidates = 0;
+  currentPage = 1;
+  pageSize = 10;
+  pageSizeOptions = [10, 20, 50];
+
+  // Search
+  searchTerm = '';
+  searchInput = '';
+
+  // Sorting
+  sortBy = 'createdAt';
+  sortOrder: 'ASC' | 'DESC' = 'DESC';
+  sortOptions = [
+    { value: 'firstName', label: 'First Name' },
+    { value: 'lastName', label: 'Last Name' },
+    { value: 'seniority', label: 'Seniority' },
+    { value: 'yearsOfExperience', label: 'Experience' },
+    { value: 'availability', label: 'Availability' },
+    { value: 'createdAt', label: 'Date Added' }
+  ];
 
   constructor(
     private candidateService: CandidateService,
@@ -45,9 +81,19 @@ export class CandidateListComponent implements OnInit {
 
   loadCandidates() {
     this.loading = true;
-    this.candidateService.getCandidates().subscribe({
-      next: (candidates) => {
-        this.candidates = candidates;
+    
+    const params: PaginationParams = {
+      page: this.currentPage,
+      limit: this.pageSize,
+      sortBy: this.sortBy,
+      sortOrder: this.sortOrder,
+      search: this.searchTerm || undefined
+    };
+
+    this.candidateService.getCandidatesWithPagination(params).subscribe({
+      next: (response: PaginatedResponse<Candidate>) => {
+        this.candidates = response.data;
+        this.totalCandidates = response.total;
         this.loading = false;
       },
       error: (error) => {
@@ -102,5 +148,41 @@ export class CandidateListComponent implements OnInit {
 
   hasFile(candidate: Candidate): boolean {
     return !!candidate.fileUrl;
+  }
+
+  // Pagination methods
+  onPageChange(event: PageEvent) {
+    this.currentPage = event.pageIndex + 1;
+    this.pageSize = event.pageSize;
+    this.loadCandidates();
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.totalCandidates / this.pageSize);
+  }
+
+  // Search methods
+  performSearch() {
+    this.searchTerm = this.searchInput.trim();
+    this.currentPage = 1;
+    this.loadCandidates();
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.searchInput = '';
+    this.currentPage = 1;
+    this.loadCandidates();
+  }
+
+  // Sorting methods
+  onSortChange() {
+    this.currentPage = 1;
+    this.loadCandidates();
+  }
+
+  toggleSortOrder() {
+    this.sortOrder = this.sortOrder === 'ASC' ? 'DESC' : 'ASC';
+    this.onSortChange();
   }
 }

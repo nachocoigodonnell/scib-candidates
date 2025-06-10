@@ -10,6 +10,7 @@ import {
   Res,
   NotFoundException,
   Inject,
+  Query,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -56,8 +57,34 @@ export class CandidateController {
   }
 
   @Get()
-  async getAllCandidates(): Promise<CandidateResponseDto[]> {
-    return await this.getAllCandidatesUseCase.execute();
+  async getAllCandidates(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
+    @Query('search') search?: string,
+  ): Promise<CandidateResponseDto[] | any> {
+    // If no pagination parameters, return all candidates (backwards compatibility)
+    if (!page && !limit) {
+      return await this.getAllCandidatesUseCase.execute();
+    }
+
+    const pageNumber = parseInt(page || '1', 10);
+    const limitNumber = parseInt(limit || '10', 10);
+
+    if (pageNumber < 1 || limitNumber < 1 || limitNumber > 100) {
+      throw new BadRequestException('Invalid pagination parameters');
+    }
+
+    const paginationOptions = {
+      page: pageNumber,
+      limit: limitNumber,
+      sortBy,
+      sortOrder: sortOrder || 'DESC',
+      searchTerm: search,
+    };
+
+    return await this.getAllCandidatesUseCase.executeWithPagination(paginationOptions);
   }
 
   @Get(':id/download-file')

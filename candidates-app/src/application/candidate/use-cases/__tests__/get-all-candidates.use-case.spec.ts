@@ -17,6 +17,7 @@ describe('GetAllCandidatesUseCase', () => {
       save: jest.fn(),
       findById: jest.fn(),
       findAll: jest.fn(),
+      findWithPagination: jest.fn(),
       delete: jest.fn(),
     };
 

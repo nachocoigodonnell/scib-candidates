@@ -104,12 +104,97 @@ describe('InMemoryCandidateRepository', () => {
     });
   });
 
+  describe('findWithPagination', () => {
+    beforeEach(async () => {
+      // Add test data
+      const candidates = [
+        createTestCandidateWithDetails('Alice', 'Anderson', 'Senior', 8, true),
+        createTestCandidateWithDetails('Bob', 'Brown', 'Junior', 2, false),
+        createTestCandidateWithDetails('Charlie', 'Clark', 'Senior', 5, true),
+        createTestCandidateWithDetails('Diana', 'Davis', 'Junior', 1, true),
+        createTestCandidateWithDetails('Edward', 'Evans', 'Senior', 10, false),
+      ];
+
+      for (const candidate of candidates) {
+        await repository.save(candidate);
+      }
+    });
+
+    it('should return paginated results', async () => {
+      const result = await repository.findWithPagination({
+        page: 1,
+        limit: 2,
+        sortBy: 'firstName',
+        sortOrder: 'ASC'
+      });
+
+      expect(result.data).toHaveLength(2);
+      expect(result.total).toBe(5);
+      expect(result.page).toBe(1);
+      expect(result.limit).toBe(2);
+      expect(result.totalPages).toBe(3);
+      expect(result.data[0].getName().getFirstName()).toBe('Alice');
+      expect(result.data[1].getName().getFirstName()).toBe('Bob');
+    });
+
+    it('should handle search filtering', async () => {
+      const result = await repository.findWithPagination({
+        page: 1,
+        limit: 10,
+        searchTerm: 'Alice'
+      });
+
+      expect(result.data).toHaveLength(1);
+      expect(result.total).toBe(1);
+      expect(result.data[0].getName().getFirstName()).toBe('Alice');
+    });
+
+    it('should sort by different fields', async () => {
+      const result = await repository.findWithPagination({
+        page: 1,
+        limit: 10,
+        sortBy: 'yearsOfExperience',
+        sortOrder: 'DESC'
+      });
+
+      expect(result.data[0].getYearsOfExperience().getValue()).toBe(10);
+      expect(result.data[1].getYearsOfExperience().getValue()).toBe(8);
+    });
+
+    it('should handle empty search results', async () => {
+      const result = await repository.findWithPagination({
+        page: 1,
+        limit: 10,
+        searchTerm: 'NonExistent'
+      });
+
+      expect(result.data).toHaveLength(0);
+      expect(result.total).toBe(0);
+      expect(result.totalPages).toBe(0);
+    });
+  });
+
   function createTestCandidate(firstName: string, lastName: string): CandidateEntity {
     return CandidateEntity.create(
       CandidateNameVO.create(firstName, lastName),
       SeniorityVO.create('Junior'),
       YearsExperienceVO.create(2),
       AvailabilityVO.create(true)
+    );
+  }
+
+  function createTestCandidateWithDetails(
+    firstName: string, 
+    lastName: string, 
+    seniority: string, 
+    yearsOfExperience: number, 
+    availability: boolean
+  ): CandidateEntity {
+    return CandidateEntity.create(
+      CandidateNameVO.create(firstName, lastName),
+      SeniorityVO.create(seniority),
+      YearsExperienceVO.create(yearsOfExperience),
+      AvailabilityVO.create(availability)
     );
   }
 });
