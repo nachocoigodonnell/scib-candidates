@@ -6,6 +6,7 @@ export class CandidateResponseDto {
     public readonly seniority: string,
     public readonly yearsOfExperience: number,
     public readonly availability: boolean,
-    public readonly createdAt: Date
+    public readonly createdAt: Date,
+    public readonly fileUrl?: string
   ) {}
 }

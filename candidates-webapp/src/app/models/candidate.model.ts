@@ -6,6 +6,7 @@ export interface Candidate {
   yearsOfExperience: number;
   availability: boolean;
   createdAt: Date;
+  fileUrl?: string;
 }
 
 export interface CreateCandidateRequest {

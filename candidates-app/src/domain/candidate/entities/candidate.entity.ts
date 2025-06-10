@@ -3,6 +3,7 @@ import { CandidateNameVO } from '../value-objects/candidate-name.vo';
 import { SeniorityVO } from '../value-objects/seniority.vo';
 import { YearsExperienceVO } from '../value-objects/years-experience.vo';
 import { AvailabilityVO } from '../value-objects/availability.vo';
+import { FileIdVO } from '../../file/value-objects/file-id.vo';
 
 export class CandidateEntity {
   private constructor(
@@ -11,7 +12,8 @@ export class CandidateEntity {
     private readonly seniority: SeniorityVO,
     private readonly yearsOfExperience: YearsExperienceVO,
     private readonly availability: AvailabilityVO,
-    private readonly createdAt: Date
+    private readonly createdAt: Date,
+    private readonly fileId?: FileIdVO
   ) {}
 
   static create(
@@ -19,7 +21,8 @@ export class CandidateEntity {
     seniority: SeniorityVO,
     yearsOfExperience: YearsExperienceVO,
     availability: AvailabilityVO,
-    id?: CandidateIdVO
+    id?: CandidateIdVO,
+    fileId?: FileIdVO
   ): CandidateEntity {
     return new CandidateEntity(
       id || CandidateIdVO.create(),
@@ -27,7 +30,8 @@ export class CandidateEntity {
       seniority,
       yearsOfExperience,
       availability,
-      new Date()
+      new Date(),
+      fileId
     );
   }
 
@@ -39,6 +43,7 @@ export class CandidateEntity {
     yearsOfExperience: number;
     availability: boolean;
     createdAt: Date;
+    fileId?: string;
   }): CandidateEntity {
     return new CandidateEntity(
       CandidateIdVO.create(data.id),
@@ -46,7 +51,8 @@ export class CandidateEntity {
       SeniorityVO.create(data.seniority),
       YearsExperienceVO.create(data.yearsOfExperience),
       AvailabilityVO.create(data.availability),
-      data.createdAt
+      data.createdAt,
+      data.fileId ? FileIdVO.create(data.fileId) : undefined
     );
   }
 
@@ -74,6 +80,10 @@ export class CandidateEntity {
     return this.createdAt;
   }
 
+  getFileId(): FileIdVO | undefined {
+    return this.fileId;
+  }
+
   isAvailable(): boolean {
     return this.availability.isAvailable();
   }
@@ -86,6 +96,7 @@ export class CandidateEntity {
     yearsOfExperience: number;
     availability: boolean;
     createdAt: Date;
+    fileId?: string;
   } {
     return {
       id: this.id.getValue(),
@@ -95,6 +106,7 @@ export class CandidateEntity {
       yearsOfExperience: this.yearsOfExperience.getValue(),
       availability: this.availability.getValue(),
       createdAt: this.createdAt,
+      fileId: this.fileId?.getValue(),
     };
   }
 }

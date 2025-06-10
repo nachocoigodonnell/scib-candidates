@@ -22,4 +22,7 @@ export class CandidateEntity {
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @Column({ name: 'file_id', type: 'uuid', nullable: true })
+  fileId?: string;
 }

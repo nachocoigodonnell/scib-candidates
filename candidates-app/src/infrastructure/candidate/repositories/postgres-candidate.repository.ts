@@ -46,6 +46,7 @@ export class PostgresCandidateRepository implements CandidateRepository {
     entity.yearsOfExperience = primitives.yearsOfExperience;
     entity.availability = primitives.availability;
     entity.createdAt = primitives.createdAt;
+    entity.fileId = primitives.fileId;
     return entity;
   }
 
@@ -58,6 +59,7 @@ export class PostgresCandidateRepository implements CandidateRepository {
       yearsOfExperience: entity.yearsOfExperience,
       availability: entity.availability,
       createdAt: entity.createdAt,
+      fileId: entity.fileId,
     });
   }
 }

@@ -24,4 +24,19 @@ export class CandidateService {
 
     return this.http.post<Candidate>(this.apiUrl, formData);
   }
+
+  downloadFile(candidateId: string): void {
+    const downloadUrl = `${this.apiUrl}/${candidateId}/download-file`;
+    
+    // Create a temporary link element to trigger download
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = '';
+    link.target = '_blank';
+    
+    // Trigger the download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 }

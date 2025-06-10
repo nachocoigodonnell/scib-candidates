@@ -403,3 +403,43 @@
     }
   }
 }
+
+/* Actions column styles */
+.actions-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.download-button {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease-in-out;
+  
+  &:not(:disabled) {
+    &:hover {
+      background-color: var(--primary-50);
+      transform: translateY(-1px);
+    }
+    
+    mat-icon {
+      color: var(--primary-600);
+    }
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    
+    mat-icon {
+      color: var(--neutral-400);
+    }
+  }
+}
+
+.disabled-icon {
+  opacity: 0.4;
+  color: var(--neutral-400) !important;
+}

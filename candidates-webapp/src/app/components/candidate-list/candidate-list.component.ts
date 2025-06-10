@@ -31,7 +31,7 @@ import { CandidateFormComponent } from '../candidate-form/candidate-form.compone
 })
 export class CandidateListComponent implements OnInit {
   candidates: Candidate[] = [];
-  displayedColumns: string[] = ['name', 'seniority', 'yearsOfExperience', 'availability'];
+  displayedColumns: string[] = ['name', 'seniority', 'yearsOfExperience', 'availability', 'actions'];
   loading = true;
 
   constructor(
@@ -92,5 +92,15 @@ export class CandidateListComponent implements OnInit {
 
   getSeniorCandidates(): number {
     return this.candidates.filter(c => c.seniority === 'Senior').length;
+  }
+
+  downloadFile(candidate: Candidate): void {
+    if (candidate.fileUrl) {
+      this.candidateService.downloadFile(candidate.id);
+    }
+  }
+
+  hasFile(candidate: Candidate): boolean {
+    return !!candidate.fileUrl;
   }
 }

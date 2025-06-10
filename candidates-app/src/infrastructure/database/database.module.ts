@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CandidateEntity } from '../candidate/entities/candidate.entity';
+import { FileEntity } from '../file/entities/file.entity';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { CandidateEntity } from '../candidate/entities/candidate.entity';
             username: configService.get('DATABASE_USER', 'candidates_user'),
             password: configService.get('DATABASE_PASSWORD', 'candidates_password'),
             database: configService.get('DATABASE_NAME', 'candidates'),
-            entities: [CandidateEntity],
+            entities: [CandidateEntity, FileEntity],
             synchronize: true, // Only for development - use migrations in production
             logging: configService.get('NODE_ENV') !== 'production',
           };
@@ -29,7 +30,7 @@ import { CandidateEntity } from '../candidate/entities/candidate.entity';
       },
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([CandidateEntity]),
+    TypeOrmModule.forFeature([CandidateEntity, FileEntity]),
   ],
   exports: [TypeOrmModule],
 })

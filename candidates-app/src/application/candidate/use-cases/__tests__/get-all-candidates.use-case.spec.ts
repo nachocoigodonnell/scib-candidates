@@ -1,5 +1,6 @@
 import { GetAllCandidatesUseCase } from '../get-all-candidates.use-case';
 import { CandidateRepository } from '../../../../domain/candidate/repositories/candidate.repository';
+import { FileRepository } from '../../../../domain/file/repositories/file.repository';
 import { CandidateEntity } from '../../../../domain/candidate/entities/candidate.entity';
 import { CandidateNameVO } from '../../../../domain/candidate/value-objects/candidate-name.vo';
 import { SeniorityVO } from '../../../../domain/candidate/value-objects/seniority.vo';
@@ -9,6 +10,7 @@ import { AvailabilityVO } from '../../../../domain/candidate/value-objects/avail
 describe('GetAllCandidatesUseCase', () => {
   let useCase: GetAllCandidatesUseCase;
   let mockRepository: jest.Mocked<CandidateRepository>;
+  let mockFileRepository: jest.Mocked<FileRepository>;
 
   beforeEach(() => {
     mockRepository = {
@@ -18,7 +20,14 @@ describe('GetAllCandidatesUseCase', () => {
       delete: jest.fn(),
     };
 
-    useCase = new GetAllCandidatesUseCase(mockRepository);
+    mockFileRepository = {
+      save: jest.fn(),
+      findById: jest.fn(),
+      findAll: jest.fn(),
+      delete: jest.fn(),
+    };
+
+    useCase = new GetAllCandidatesUseCase(mockRepository, mockFileRepository);
   });
 
   describe('execute', () => {

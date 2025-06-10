@@ -23,6 +23,34 @@ services:
       start_period: 30s
     restart: unless-stopped
 
+  # LocalStack for S3 emulation
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: candidates-localstack
+    ports:
+      - "4566:4566"  # LocalStack main port
+      - "4510-4559:4510-4559"  # External service port range
+    environment:
+      - DEBUG=1
+      - SERVICES=s3
+      - DEFAULT_REGION=us-east-1
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - PERSISTENCE=1
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - candidates-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
   # Backend service (NestJS API)
   backend:
     build:
@@ -40,8 +68,16 @@ services:
       - DATABASE_NAME=candidates
       - DATABASE_USER=candidates_user
       - DATABASE_PASSWORD=candidates_password
+      - FILE_STORAGE_TYPE=s3
+      - AWS_ENDPOINT=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - S3_BUCKET_NAME=candidates-files
     depends_on:
       database:
+        condition: service_healthy
+      localstack:
         condition: service_healthy
     networks:
       - candidates-network
@@ -75,6 +111,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  localstack_data:
     driver: local
 
 networks:
