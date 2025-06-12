@@ -23,9 +23,13 @@ import { CandidateRepository } from '../../../domain/candidate/repositories/cand
 import { FileRepository } from '../../../domain/file/repositories/file.repository';
 import { CandidateIdVO } from '../../../domain/candidate/value-objects/candidate-id.vo';
 import { SERVICE_TOKENS, REPOSITORY_TOKENS } from '../../../shared/constants/tokens';
+import { BusinessMetricsService } from '../../monitoring/business-metrics.service';
+import { CustomLogger } from '../../monitoring/custom.logger';
 
 @Controller('candidates')
 export class CandidateController {
+  private readonly logger = new CustomLogger(CandidateController.name);
+
   constructor(
     private readonly createCandidateUseCase: CreateCandidateUseCase,
     private readonly getAllCandidatesUseCase: GetAllCandidatesUseCase,
@@ -34,7 +38,8 @@ export class CandidateController {
     @Inject(REPOSITORY_TOKENS.CANDIDATE_REPOSITORY)
     private readonly candidateRepository: CandidateRepository,
     @Inject(REPOSITORY_TOKENS.FILE_REPOSITORY)
-    private readonly fileRepository: FileRepository
+    private readonly fileRepository: FileRepository,
+    private readonly businessMetricsService: BusinessMetricsService
   ) {}
 
   @Post()
@@ -43,17 +48,30 @@ export class CandidateController {
     @Body() body: { firstName: string; lastName: string },
     @UploadedFile() file: Express.Multer.File,
   ): Promise<CandidateResponseDto> {
+    this.logger.log(`Creating candidate: ${body.firstName} ${body.lastName} with file: ${file?.originalname}`);
+    
     if (!file) {
+      this.logger.error('Excel file is required for candidate creation');
       throw new BadRequestException('Excel file is required');
     }
 
     if (!body.firstName || !body.lastName) {
+      this.logger.error('First name and last name are required');
       throw new BadRequestException('First name and last name are required');
     }
 
-    const createCandidateDto = new CreateCandidateDto(body.firstName, body.lastName);
-    
-    return await this.createCandidateUseCase.execute(createCandidateDto, file.buffer, file.originalname);
+    try {
+      const createCandidateDto = new CreateCandidateDto(body.firstName, body.lastName);
+      
+      
+      const result = await this.createCandidateUseCase.execute(createCandidateDto, file.buffer, file.originalname);
+      
+      this.logger.log(`Candidate created successfully with ID: ${result.id}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error creating candidate: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   @Get()
@@ -64,27 +82,41 @@ export class CandidateController {
     @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
     @Query('search') search?: string,
   ): Promise<CandidateResponseDto[] | any> {
-    // If no pagination parameters, return all candidates (backwards compatibility)
-    if (!page && !limit) {
-      return await this.getAllCandidatesUseCase.execute();
+    this.logger.log(`Getting candidates - page: ${page}, limit: ${limit}, search: ${search || 'none'}`);
+    
+    try {
+      // If no pagination parameters, return all candidates (backwards compatibility)
+      if (!page && !limit) {
+        const result = await this.getAllCandidatesUseCase.execute();
+        this.logger.log(`Retrieved ${result.length} candidates (no pagination)`);
+        return result;
+      }
+
+      const pageNumber = parseInt(page || '1', 10);
+      const limitNumber = parseInt(limit || '10', 10);
+
+      if (pageNumber < 1 || limitNumber < 1 || limitNumber > 100) {
+        this.logger.warn(`Invalid pagination parameters: page=${pageNumber}, limit=${limitNumber}`);
+        throw new BadRequestException('Invalid pagination parameters');
+      }
+
+      const paginationOptions = {
+        page: pageNumber,
+        limit: limitNumber,
+        sortBy,
+        sortOrder: sortOrder || 'DESC',
+        searchTerm: search,
+      };
+
+      const result = await this.getAllCandidatesUseCase.executeWithPagination(paginationOptions);
+      
+      
+      this.logger.log(`Retrieved ${result.data.length} candidates from ${result.total} total (page ${pageNumber})`);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error retrieving candidates: ${error.message}`, error.stack);
+      throw error;
     }
-
-    const pageNumber = parseInt(page || '1', 10);
-    const limitNumber = parseInt(limit || '10', 10);
-
-    if (pageNumber < 1 || limitNumber < 1 || limitNumber > 100) {
-      throw new BadRequestException('Invalid pagination parameters');
-    }
-
-    const paginationOptions = {
-      page: pageNumber,
-      limit: limitNumber,
-      sortBy,
-      sortOrder: sortOrder || 'DESC',
-      searchTerm: search,
-    };
-
-    return await this.getAllCandidatesUseCase.executeWithPagination(paginationOptions);
   }
 
   @Get(':id/download-file')

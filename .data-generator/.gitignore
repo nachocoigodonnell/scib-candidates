@@ -1,0 +1,59 @@
+# ───────────────────────────────
+# Dependencies and build artifacts
+# ───────────────────────────────
+node_modules/
+dist/
+build/
+.cache/               # Caché del CLI de Nest
+coverage/             # Reportes de cobertura (Jest/Istanbul)
+
+# ───────────────────────────────
+# Environment variables
+# ───────────────────────────────
+.env
+.env.*                # .env.development, .env.production, etc.
+*.local               # .env.local, .npmrc.local …
+
+# ───────────────────────────────
+# Logs and runtime data
+# ───────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.pid
+*.pid.lock
+
+# ───────────────────────────────
+# Caches
+# ───────────────────────────────
+*.tsbuildinfo         # Caché de compilación de TypeScript
+.nyc_output/          # Caché de cobertura
+.eslintcache          # Caché de ESLint
+
+# ───────────────────────────────
+# Temporal Files
+# ───────────────────────────────
+tmp/
+temp/
+*.swp                 # Archivos swap de Vim
+*.tmp
+
+.vscode/
+.idea/
+*.suo
+*.ppm
+*.ntvs*
+*.njsproj
+*.sln
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ───────────────────────────────
+# Other files
+# ───────────────────────────────
+npm-debug.*.json
+.yarn-integrity
+.pnpm-debug.log

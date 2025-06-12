@@ -1,0 +1,20 @@
+{
+  "name": "candidate-generator",
+  "version": "1.0.0",
+  "description": "Random candidate generator",
+  "main": "generate-candidates.js",
+  "scripts": {
+    "start": "node generate-candidates.js",
+    "test": "node generate-candidates.js"
+  },
+  "dependencies": {
+    "form-data": "^4.0.0",
+    "node-fetch": "^2.6.7",
+    "xlsx": "^0.18.5"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "Nacho Coig",
+  "license": "MIT"
+}

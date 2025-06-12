@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { CustomLogger } from './infrastructure/monitoring/custom.logger';
 
 // Polyfill for crypto in Node.js 18
 if (!globalThis.crypto) {
@@ -8,7 +9,11 @@ if (!globalThis.crypto) {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const customLogger = new CustomLogger('NestApplication');
+  
+  const app = await NestFactory.create(AppModule, {
+    logger: customLogger,
+  });
   
   app.enableCors({
     origin: ['http://localhost:4200', 'http://localhost:80', 'http://localhost'],
@@ -18,7 +23,9 @@ async function bootstrap() {
   
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  console.log(`Candidates API is running on port ${port}`);
+  
+  const logger = new CustomLogger('Bootstrap');
+  logger.log(`Candidates API is running on port ${port}`);
 }
 
 bootstrap();

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, CreateBucketCommand, HeadBucketCommand } from '@aws-sdk/client-s3';
 import { FileStorageService } from '../../../application/candidate/services/file-storage.service';
+import { CustomLogger } from '../../monitoring/custom.logger';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class S3FileStorageService implements FileStorageService {
   private bucketName: string;
   private region: string;
   private endpoint: string;
+  private readonly logger = new CustomLogger(S3FileStorageService.name);
 
   constructor(private configService: ConfigService) {
     this.bucketName = this.configService.get('S3_BUCKET_NAME', 'candidates-files');
@@ -80,7 +82,7 @@ export class S3FileStorageService implements FileStorageService {
     try {
       await this.s3Client.send(command);
     } catch (error) {
-      console.warn(`Could not delete file ${fileName} from S3:`, error.message);
+      this.logger.warn(`Could not delete file ${fileName} from S3: ${error.message}`);
     }
   }
 
@@ -98,9 +100,9 @@ export class S3FileStorageService implements FileStorageService {
           Bucket: this.bucketName,
         });
         await this.s3Client.send(createCommand);
-        console.log(`Created S3 bucket: ${this.bucketName}`);
+        this.logger.log(`Created S3 bucket: ${this.bucketName}`);
       } catch (createError) {
-        console.error(`Failed to create S3 bucket: ${this.bucketName}`, createError);
+        this.logger.error(`Failed to create S3 bucket: ${this.bucketName}`, createError.message);
       }
     }
   }

@@ -5,6 +5,7 @@ import { ExcelParserService } from '../../services/excel-parser.service';
 import { FileStorageService } from '../../services/file-storage.service';
 import { CreateCandidateDto, CandidateDataFromExcelDto } from '../../dtos/create-candidate.dto';
 import { CandidateEntity } from '../../../../domain/candidate/entities/candidate.entity';
+import { BusinessMetricsService } from '../../../../infrastructure/monitoring/business-metrics.service';
 
 describe('CreateCandidateUseCase', () => {
   let useCase: CreateCandidateUseCase;
@@ -12,6 +13,7 @@ describe('CreateCandidateUseCase', () => {
   let mockFileRepository: jest.Mocked<FileRepository>;
   let mockExcelParser: jest.Mocked<ExcelParserService>;
   let mockFileStorage: jest.Mocked<FileStorageService>;
+  let mockBusinessMetrics: Pick<BusinessMetricsService, 'incrementCandidatesCreated' | 'getMetrics'>;
 
   beforeEach(() => {
     mockRepository = {
@@ -40,7 +42,12 @@ describe('CreateCandidateUseCase', () => {
       deleteFile: jest.fn(),
     };
 
-    useCase = new CreateCandidateUseCase(mockRepository, mockFileRepository, mockExcelParser, mockFileStorage);
+    mockBusinessMetrics = {
+      incrementCandidatesCreated: jest.fn(),
+      getMetrics: jest.fn(),
+    };
+
+    useCase = new CreateCandidateUseCase(mockRepository, mockFileRepository, mockExcelParser, mockFileStorage, mockBusinessMetrics as BusinessMetricsService);
   });
 
   describe('execute', () => {

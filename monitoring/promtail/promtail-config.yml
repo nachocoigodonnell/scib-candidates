@@ -1,0 +1,70 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        
+    relabel_configs:
+      # Set the log file path
+      - source_labels: ['__meta_docker_container_id']
+        target_label: __path__
+        replacement: '/var/lib/docker/containers/${1}/${1}-json.log'
+      
+      # Set container name without the leading slash
+      - source_labels: ['__meta_docker_container_name']
+        target_label: container_name
+        regex: '/(.*)'
+        replacement: '${1}'
+        
+      # Only keep containers that match our backend name
+      - source_labels: ['container_name']
+        regex: 'candidates-backend'
+        action: keep
+        
+      # Set job label
+      - target_label: job
+        replacement: 'backend-logs'
+    
+    pipeline_stages:
+      # Parse Docker log JSON format
+      - json:
+          expressions:
+            output: log
+            stream: stream
+            time: time
+            
+      # Set timestamp from Docker
+      - timestamp:
+          source: time
+          format: RFC3339Nano
+          
+      # Try to parse application JSON logs
+      - json:
+          expressions:
+            level: level
+            context: context
+            message: message
+            timestamp: timestamp
+            pid: pid
+          source: output
+          
+      # Add labels (including the extracted ones from JSON)
+      - labels:
+          container_name:
+          stream:
+          level:
+          context:
+          
+      # Output the log content
+      - output:
+          source: output
