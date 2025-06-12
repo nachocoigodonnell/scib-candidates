@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  database:
+    image: postgres:15-alpine
+    container_name: candidates-database
+    ports:
+      - "8800:5432"
+    environment:
+      - POSTGRES_DB=candidates
+      - POSTGRES_USER=candidates_user
+      - POSTGRES_PASSWORD=candidates_password
+    labels:
+      - "logging=enabled"
+      - "service=database"
+      - "app=candidates"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - candidates-app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U candidates_user -d candidates"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # LocalStack for S3 emulation
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: candidates-localstack
+    ports:
+      - "4566:4566"  # LocalStack main port
+      - "4510-4559:4510-4559"  # External service port range
+    environment:
+      - DEBUG=1
+      - SERVICES=s3
+      - DEFAULT_REGION=us-east-1
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - PERSISTENCE=1
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - candidates-app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  # Backend service (NestJS API)
+  backend:
+    build:
+      context: ./candidates-app
+      dockerfile: Dockerfile
+    container_name: candidates-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - NODE_ENV=production
+      - LOG_LEVEL=log
+      - DATABASE_TYPE=postgres
+      - DATABASE_HOST=database
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=candidates
+      - DATABASE_USER=candidates_user
+      - DATABASE_PASSWORD=candidates_password
+      - FILE_STORAGE_TYPE=s3
+      - AWS_ENDPOINT=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - S3_BUCKET_NAME=candidates-files
+    labels:
+      - "logging=enabled"
+      - "service=backend"
+      - "app=candidates"
+    depends_on:
+      database:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    networks:
+      - candidates-app-network
+      - candidates-monitoring-network  # Connect to monitoring network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  # Frontend service (Angular + Nginx)
+  frontend:
+    build:
+      context: ./candidates-webapp
+      dockerfile: Dockerfile
+    container_name: candidates-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - candidates-app-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  localstack_data:
+    driver: local
+
+networks:
+  candidates-app-network:
+    driver: bridge
+    name: candidates-app-network
+  candidates-monitoring-network:
+    external: true
+    name: candidates-monitoring-network

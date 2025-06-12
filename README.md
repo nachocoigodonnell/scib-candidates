@@ -1,51 +1,78 @@
 # Candidates Management System
 
-A modern candidate management application built with NestJS backend and Angular frontend, implementing Domain-Driven Design (DDD) architecture.
+A complete candidate management platform with business metrics monitoring, built using modern microservices architecture and Domain-Driven Design (DDD).
 
-## Features
+## 🏗️ Architecture Overview
 
-- **Candidate Management**: Create and view candidates with professional information
-- **Excel Upload**: Upload candidate data via Excel files (single row format)
-- **Modern UI**: Professional Angular interface with Material Design
-- **DDD Architecture**: Clean separation of concerns with domain, application, and infrastructure layers
-- **Docker Support**: Full containerization with Docker Compose
+The system is composed of two independent Docker Compose stacks:
 
-## Tech Stack
+- **Application Stack** (`docker-compose.app.yml`): Core business functionality
+- **Monitoring Stack** (`docker-compose.monitoring.yml`): Observability and metrics
 
-### Backend
-- **NestJS** - Node.js framework with TypeScript
-- **Domain-Driven Design** - Clean architecture with value objects and entities
-- **In-Memory Storage** - Simple data persistence
-- **Excel Processing** - XLSX file parsing
-- **Jest** - Unit and integration testing
+## 🚀 Quick Start
 
-### Frontend
-- **Angular 18** - Modern web framework
-- **Material Design V3** - Professional UI components
-- **Reactive Forms** - Form validation and handling
-- **TypeScript** - Type-safe development
+### Prerequisites
+- Docker and Docker Compose
+- Node.js 18+ (for development)
 
-## Quick Start with Docker
+### 1. Start Monitoring Stack
+```bash
+# Create monitoring network first
+docker network create candidates-monitoring-network
 
-1. **Clone and navigate to the project**:
-   ```bash
-   git clone <repository-url>
-   cd candidates.new
-   ```
+# Start monitoring services
+docker-compose -f docker-compose.monitoring.yml up -d
+```
 
-2. **Start with Docker Compose**:
-   ```bash
-   docker-compose up --build
-   ```
+### 2. Start Application Stack
+```bash
+# Start application services
+docker-compose -f docker-compose.app.yml up --build
+```
 
-3. **Access the applications**:
-   - Frontend: http://localhost:80
-   - Backend API: http://localhost:8080
+### 3. Access Applications
+- **Frontend**: http://localhost:80
+- **Backend API**: http://localhost:8080
+- **Grafana**: http://localhost:3000 (admin/admin123)
+- **Prometheus**: http://localhost:9090
 
-## Development Setup
+## 📊 System Components
 
-### Backend Development
+### Application Stack (docker-compose.app.yml)
+| Service | Container Name | Port | Purpose |
+|---------|---------------|------|---------|
+| **frontend** | candidates-frontend | 80 | Angular UI with Material Design |
+| **backend** | candidates-backend | 8080 | NestJS API with DDD architecture |
+| **database** | candidates-database | 8800 | PostgreSQL 15 database |
+| **localstack** | candidates-localstack | 4566 | S3-compatible storage emulation |
 
+### Monitoring Stack (docker-compose.monitoring.yml)
+| Service | Container Name | Port | Purpose |
+|---------|---------------|------|---------|
+| **prometheus** | candidates-prometheus | 9090 | Metrics collection and storage |
+| **grafana** | candidates-grafana | 3000 | Dashboards and visualization |
+| **node-exporter** | candidates-node-exporter | 9100 | System metrics (CPU, memory, disk) |
+| **postgres-exporter** | candidates-postgres-exporter | 9187 | PostgreSQL metrics |
+| **loki** | candidates-loki | 3100 | Log aggregation |
+| **promtail** | candidates-promtail | - | Log collection agent |
+
+## 🎯 Features
+
+### Core Functionality
+- **Candidate Management**: Create, view, search, and paginate candidates
+- **Excel Processing**: Upload XLSX files with candidate data
+- **File Storage**: S3-compatible file storage with LocalStack
+- **Business Metrics**: Track candidate creation by seniority and availability
+
+### Technical Features
+- **Domain-Driven Design**: Clean separation of domain, application, and infrastructure
+- **Pagination & Search**: Advanced candidate filtering and sorting
+- **Business Metrics**: Custom Prometheus metrics for business insights
+- **Log Aggregation**: Centralized logging with Loki
+
+## 🔧 Development
+
+### Backend Development (NestJS)
 ```bash
 cd candidates-app
 
@@ -59,12 +86,12 @@ npm run start:dev
 npm test
 npm run test:e2e
 
-# Build for production
-npm run build
+# Run linting and type checking
+npm run lint
+npm run typecheck
 ```
 
-### Frontend Development
-
+### Frontend Development (Angular)
 ```bash
 cd candidates-webapp
 
@@ -81,71 +108,145 @@ ng test
 ng build
 ```
 
-## Excel File Format
+## 📝 Excel File Format
 
-Upload Excel files with a single row containing:
-1. **Seniority**: "Junior" or "Senior"
-2. **Years of Experience**: Numeric value (e.g., 5)
-3. **Availability**: true or false
+Upload Excel files with a single data row containing:
 
-**Example Excel row**: `Senior | 5 | true`
+| Column A | Column B | Column C |
+|----------|----------|----------|
+| Seniority | Years Experience | Availability |
+| "Senior" or "Junior" | Number (1-20) | true or false |
 
-## API Endpoints
+**Example**: `Senior | 7 | true`
 
-- `GET /candidates` - Retrieve all candidates
-- `POST /candidates` - Create new candidate with Excel file
+## 🌐 API Endpoints
 
-## Project Structure
+### Candidates
+- `GET /candidates` - List all candidates with pagination
+- `POST /candidates` - Create candidate with Excel upload
+- `GET /candidates/:id/download-file` - Download candidate's Excel file
+
+### Monitoring
+- `GET /health` - Application health check
+- `GET /metrics` - Prometheus metrics endpoint
+
+### Query Parameters (GET /candidates)
+- `page`: Page number (default: 1)
+- `limit`: Items per page (default: 10, max: 100)
+- `sortBy`: Sort field (firstName, lastName, createdAt, etc.)
+- `sortOrder`: ASC or DESC (default: DESC)
+- `search`: Search term for name filtering
+
+## 📈 Monitoring & Metrics
+
+### Business Metrics
+- `candidates_created_total`: Total candidates created (labeled by seniority, availability)
+
+### System Metrics (via node-exporter)
+- CPU usage, memory consumption, disk I/O
+- Network statistics, filesystem metrics
+
+### Application Metrics
+- PostgreSQL performance metrics
+- Container health and status
+
+### Grafana Dashboards
+Access Grafana at `http://localhost:3000` with credentials `admin/admin123` to view:
+- Business metrics dashboard
+- System performance overview
+- Database metrics
+
+## 🧪 Load Testing
+
+Use the included data generator to create test candidates:
+
+```bash
+cd .data-generator
+npm install
+npm start
+```
+
+This script generates random candidates for 2 minutes to test the monitoring dashboard.
+
+## 🗂️ Project Structure
 
 ```
 candidates.new/
-├── candidates-app/          # NestJS Backend
+├── candidates-app/              # NestJS Backend
 │   ├── src/
-│   │   ├── domain/          # Domain layer (entities, value objects)
-│   │   ├── application/     # Application layer (use cases, DTOs)
-│   │   ├── infrastructure/  # Infrastructure layer (repositories, services)
-│   │   └── presentation/    # Presentation layer (controllers)
+│   │   ├── domain/             # Domain entities and value objects
+│   │   ├── application/        # Use cases and DTOs
+│   │   ├── infrastructure/     # Controllers, repositories, services
+│   │   └── shared/            # Common utilities
 │   └── test/
-├── candidates-webapp/       # Angular Frontend
+├── candidates-webapp/           # Angular Frontend
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── components/
 │   │   │   ├── services/
 │   │   │   └── models/
 │   │   └── environments/
-└── docker-compose.yml       # Docker orchestration
+├── .data-generator/            # Load testing script
+├── monitoring/                 # Monitoring configurations
+│   ├── prometheus/
+│   ├── grafana/
+│   ├── loki/
+│   └── promtail/
+├── docker-compose.app.yml      # Application stack
+└── docker-compose.monitoring.yml  # Monitoring stack
 ```
 
-## Docker Configuration
+## 🐳 Docker Commands
 
-### Ports
-- **Frontend**: Port 80 (Nginx)
-- **Backend**: Port 8080 (NestJS)
-
-### Services
-- `frontend`: Angular app served by Nginx
-- `backend`: NestJS API server
-- Network: `candidates-network` for service communication
-
-### Health Checks
-Both services include health check endpoints for monitoring.
-
-## Commands
-
+### Application Stack
 ```bash
-# Start all services
-docker-compose up
+# Start application services
+docker-compose -f docker-compose.app.yml up --build
 
-# Build and start services
-docker-compose up --build
+# Stop application services
+docker-compose -f docker-compose.app.yml down
 
-# Stop services
-docker-compose down
-
-# View logs
-docker-compose logs -f
-
-# Access specific service logs
-docker-compose logs -f frontend
-docker-compose logs -f backend
+# View application logs
+docker-compose -f docker-compose.app.yml logs -f
 ```
+
+### Monitoring Stack
+```bash
+# Start monitoring services
+docker-compose -f docker-compose.monitoring.yml up -d
+
+# Stop monitoring services
+docker-compose -f docker-compose.monitoring.yml down
+
+# View monitoring logs
+docker-compose -f docker-compose.monitoring.yml logs -f
+```
+
+### Both Stacks
+```bash
+# Start everything
+docker network create candidates-monitoring-network
+docker-compose -f docker-compose.monitoring.yml up -d
+docker-compose -f docker-compose.app.yml up --build
+
+# Stop everything
+docker-compose -f docker-compose.app.yml down
+docker-compose -f docker-compose.monitoring.yml down
+```
+
+## 🔧 Environment Configuration
+
+### Application Environment Variables
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | 8080 | Backend API port |
+| `NODE_ENV` | production | Node.js environment |
+| `DATABASE_HOST` | database | PostgreSQL host |
+| `DATABASE_PORT` | 5432 | PostgreSQL port |
+| `AWS_ENDPOINT` | http://localstack:4566 | S3 endpoint |
+| `S3_BUCKET_NAME` | candidates-files | S3 bucket name |
+
+### Monitoring Configuration
+- Prometheus retention: 30 days
+- Grafana admin password: `admin123`
+- Log retention: Configured per service
