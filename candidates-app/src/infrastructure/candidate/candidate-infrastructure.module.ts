@@ -21,7 +21,7 @@ export class CandidateInfrastructureModule {
 
     return {
       module: CandidateInfrastructureModule,
-      imports: isPostgres ? [DatabaseModule, FileInfrastructureModule] : [FileInfrastructureModule],
+      imports: isPostgres ? [DatabaseModule, FileInfrastructureModule.forRoot()] : [FileInfrastructureModule.forRoot()],
       controllers: [CandidateController],
       providers: [
         {
